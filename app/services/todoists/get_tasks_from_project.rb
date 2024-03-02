@@ -17,8 +17,7 @@ module Todoists
       # GET request
       response = RestClient.get(url, headers)
 
-      p response
-
+      JSON.parse(response)
       #   [{"id"=>"7036319947",
       #   "assigner_id"=>"15279043",
       #   "assignee_id"=>"15335539",
