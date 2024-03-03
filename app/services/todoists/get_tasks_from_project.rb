@@ -3,22 +3,20 @@ module Todoists
     def initialize(_attr = {})
       @project_id = ENV['TODOIST_TEST_CHANNEL']
       @token = ENV['DC_TODOIST_TOKEN']
-      @endpoint = 'https://api.todoist.com/rest/v2/tasks?project_id='
+
+      @headers = {
+        "Content-Type": 'application/json',
+        "Authorization": "Bearer #{@token}"
+      }
       super()
     end
 
     def call
-      url = @endpoint + @project_id.to_s
-
-      headers = {
-        "Content-Type": 'application/json',
-        "Authorization": "Bearer #{@token}"
-      }
-
-      # GET request
-      response = RestClient.get(url, headers)
-
-      JSON.parse(response)
+      collaborators = get_collaborators
+      tasks = get_tasks
+      tasks.each do |task|
+        task['assignee_id'] = collaborators.find { |collaborator| collaborator['id'] == task['assignee_id'] }['name'] if task['assignee_id']
+      end
       ## Example response
       #   [{"id"=>"7036319947",
       #   "assigner_id"=>"15279043",
@@ -39,6 +37,22 @@ module Todoists
       #   "url"=>"https://todoist.com/showTask?id=7036319947",
       #   "duration"=>nil},
       #   ...]
+    end
+
+    private
+
+    def get_collaborators
+      url = "https://api.todoist.com/rest/v2/projects/#{@project_id}/collaborators"
+
+      response = RestClient.get(url, @headers)
+      JSON.parse(response)
+    end
+
+    def get_tasks
+      url = "https://api.todoist.com/rest/v2/tasks?project_id=#{@project_id}"
+      # GET request
+      response = RestClient.get(url, @headers)
+      JSON.parse(response)
     end
   end
 end

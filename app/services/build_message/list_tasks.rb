@@ -7,7 +7,7 @@ module BuildMessage
 
     def call
       tasks = @tasks.map.with_index do |task, index|
-        "#{index + 1} - #{task['content']}"
+        "#{index + 1} - #{task['content']} #{"[#{task['assignee_id']}]" if task['assignee_id']}"
       end
 
       <<~MESSAGE
