@@ -1,23 +1,26 @@
 module Todoists
-  class GetTasksFromProject
+  class GetTasksFromProject < ApplicationService
     def initialize(_attr = {})
       @project_id = ENV['TODOIST_TEST_CHANNEL']
       @token = ENV['DC_TODOIST_TOKEN']
-      @endpoint = 'https://api.todoist.com/rest/v2/tasks?project_id='
-    end
 
-    def call
-      url = @endpoint + @project_id.to_s
-
-      headers = {
+      @headers = {
         "Content-Type": 'application/json',
         "Authorization": "Bearer #{@token}"
       }
+      super()
+    end
 
-      # GET request
-      response = RestClient.get(url, headers)
-
-      JSON.parse(response)
+    def call
+      collaborators = fetch_collaborators
+      tasks = fetch_tasks
+      tasks.each do |task|
+        # task['assignee_id'] = collaborators.find { |collaborator| collaborator['id'] == task['assignee_id'] }['name'] if task['assignee_id']
+        if task['assignee_id']
+          task['assignee_id'] = collaborators.find { |collaborator| collaborator['id'] == task['assignee_id'] }['name']
+        end
+      end
+      ## Example response
       #   [{"id"=>"7036319947",
       #   "assigner_id"=>"15279043",
       #   "assignee_id"=>"15335539",
@@ -39,8 +42,20 @@ module Todoists
       #   ...]
     end
 
-    def self.call(*args, &block)
-      new(*args, &block).call
+    private
+
+    def fetch_collaborators
+      url = "https://api.todoist.com/rest/v2/projects/#{@project_id}/collaborators"
+
+      response = RestClient.get(url, @headers)
+      JSON.parse(response)
+    end
+
+    def fetch_tasks
+      url = "https://api.todoist.com/rest/v2/tasks?project_id=#{@project_id}"
+      # GET request
+      response = RestClient.get(url, @headers)
+      JSON.parse(response)
     end
   end
 end
