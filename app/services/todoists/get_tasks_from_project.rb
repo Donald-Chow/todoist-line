@@ -12,10 +12,13 @@ module Todoists
     end
 
     def call
-      collaborators = get_collaborators
-      tasks = get_tasks
+      collaborators = fetch_collaborators
+      tasks = fetch_tasks
       tasks.each do |task|
-        task['assignee_id'] = collaborators.find { |collaborator| collaborator['id'] == task['assignee_id'] }['name'] if task['assignee_id']
+        # task['assignee_id'] = collaborators.find { |collaborator| collaborator['id'] == task['assignee_id'] }['name'] if task['assignee_id']
+        if task['assignee_id']
+          task['assignee_id'] = collaborators.find { |collaborator| collaborator['id'] == task['assignee_id'] }['name']
+        end
       end
       ## Example response
       #   [{"id"=>"7036319947",
@@ -41,14 +44,14 @@ module Todoists
 
     private
 
-    def get_collaborators
+    def fetch_collaborators
       url = "https://api.todoist.com/rest/v2/projects/#{@project_id}/collaborators"
 
       response = RestClient.get(url, @headers)
       JSON.parse(response)
     end
 
-    def get_tasks
+    def fetch_tasks
       url = "https://api.todoist.com/rest/v2/tasks?project_id=#{@project_id}"
       # GET request
       response = RestClient.get(url, @headers)
