@@ -1,7 +1,8 @@
 module BuildMessage
-  class ListTasks
+  class ListTasks < ApplicationService
     def initialize(attr = {})
       @tasks = attr[:tasks]
+      super()
     end
 
     def call
@@ -13,10 +14,6 @@ module BuildMessage
         -- Your Tasks --
         #{tasks.join("\n")}
       MESSAGE
-    end
-
-    def self.call(*args, &block)
-      new(*args, &block).call
     end
   end
 end

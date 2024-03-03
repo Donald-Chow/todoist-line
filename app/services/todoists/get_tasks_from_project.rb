@@ -1,9 +1,10 @@
 module Todoists
-  class GetTasksFromProject
+  class GetTasksFromProject < ApplicationService
     def initialize(_attr = {})
       @project_id = ENV['TODOIST_TEST_CHANNEL']
       @token = ENV['DC_TODOIST_TOKEN']
       @endpoint = 'https://api.todoist.com/rest/v2/tasks?project_id='
+      super()
     end
 
     def call
@@ -18,6 +19,7 @@ module Todoists
       response = RestClient.get(url, headers)
 
       JSON.parse(response)
+      ## Example response
       #   [{"id"=>"7036319947",
       #   "assigner_id"=>"15279043",
       #   "assignee_id"=>"15335539",
@@ -37,10 +39,6 @@ module Todoists
       #   "url"=>"https://todoist.com/showTask?id=7036319947",
       #   "duration"=>nil},
       #   ...]
-    end
-
-    def self.call(*args, &block)
-      new(*args, &block).call
     end
   end
 end
